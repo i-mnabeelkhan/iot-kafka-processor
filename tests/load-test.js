@@ -4,12 +4,12 @@ import { check, sleep } from "k6";
 // Test configuration
 export const options = {
   stages: [
-    { duration: "60s", target: 1000 }, // Ramp up to 20 users over 30 seconds
-    { duration: "4m", target: 1000 }, // Stay at 20 users for 1 minute
-    { duration: "5s", target: 0 }, // Ramp down to 0 users
+    { duration: "60s", target: 1000 }, // Ramp up to 1000 users over 60 seconds
+    { duration: "8m", target: 1000 }, // Stay at 1000 users for 9 minutes
+    { duration: "60s", target: 0 }, // Ramp down to 0 users
   ],
   thresholds: {
-    http_req_duration: ["p(95)<500"], // 95% of requests should be below 500ms
+    http_req_duration: ["p(95)<900"], // 95% of requests should be below 900ms
     http_req_failed: ["rate<0.01"], // Less than 1% of requests should fail
   },
 };

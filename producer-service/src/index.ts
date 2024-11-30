@@ -1,7 +1,5 @@
 import { Hono } from "hono";
-import { kafka, startServices } from "./start.services";
-import { zValidator } from "@hono/zod-validator";
-import { z } from "zod";
+import { startServices } from "./start.services";
 // routes
 import postRoutes from "./services/create-post";
 

@@ -7,7 +7,7 @@ export class KafkaConfig {
 
   // constructor
   constructor() {
-    this.brokers = process.env.KAFKA_BROKERS || "localhost:29092";
+    this.brokers = process.env.KAFKA_BROKERS ?? "localhost:29092";
     this.kafka = new Kafka({
       clientId: "producer-service",
       brokers: [this.brokers],
