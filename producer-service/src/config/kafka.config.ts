@@ -1,14 +1,17 @@
-import { Admin, Kafka, Producer, Message } from "kafkajs";
+import { Admin, Kafka, Producer, Message, logLevel } from "kafkajs";
 export class KafkaConfig {
   private readonly kafka: Kafka;
   private readonly producer: Producer;
   private readonly admin: Admin;
+  private readonly brokers: string;
 
   // constructor
-  constructor(brokers: string[]) {
+  constructor() {
+    this.brokers = process.env.KAFKA_BROKERS || "localhost:29092";
     this.kafka = new Kafka({
       clientId: "producer-service",
-      brokers: brokers,
+      brokers: [this.brokers],
+      logLevel: logLevel.ERROR,
     });
     this.producer = this.kafka.producer();
     this.admin = this.kafka.admin();
@@ -34,7 +37,7 @@ export class KafkaConfig {
         console.log(`\n\n✅ Topic ${topic} already exists\n\n`);
       } else {
         await this.admin.createTopics({
-          topics: [{ topic }],
+          topics: [{ topic, numPartitions: 1 }],
         });
         console.log(`\n\n✅ Topic ${topic} created\n\n`);
       }
@@ -43,12 +46,25 @@ export class KafkaConfig {
     }
   }
 
-  // message producer
+  // message producer for type Message
   async produceMessage(topic: string, messages: Message[]) {
     try {
       await this.producer.send({
         topic,
         messages,
+      });
+      console.log(`✅ Messages produced to topic ${topic}`);
+    } catch (error) {
+      throw new Error(`❌ Error producing message: ${error}`);
+    }
+  }
+
+  // send json to topic
+  async sendToTopic(topic: string, message: string) {
+    try {
+      await this.producer.send({
+        topic,
+        messages: [{ value: message }],
       });
       console.log(`✅ Messages produced to topic ${topic}`);
     } catch (error) {

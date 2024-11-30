@@ -1,18 +1,22 @@
-import { Kafka, Consumer } from "kafkajs";
+import { Kafka, Consumer, logLevel } from "kafkajs";
+
 export class KafkaConfig {
   private readonly kafka: Kafka;
   private readonly consumer: Consumer;
+  private readonly brokers: string;
 
-  // constructor
-  constructor(brokers: string[]) {
+  constructor() {
+    this.brokers = process.env.KAFKA_BROKERS || "localhost:29092";
     this.kafka = new Kafka({
       clientId: "consumer-service",
-      brokers: brokers,
+      brokers: [this.brokers],
+      logLevel: logLevel.INFO,
     });
-    this.consumer = this.kafka.consumer({ groupId: "consumer-group-1" });
+    this.consumer = this.kafka.consumer({
+      groupId: "consumer-group",
+    });
   }
 
-  // connect to kafka
   async connect() {
     try {
       await this.consumer.connect();
@@ -23,22 +27,23 @@ export class KafkaConfig {
     }
   }
 
-  // subscribe to topic
-  async subscribe(topic: string) {
+  async subscribeToTopic(topic: string) {
     try {
-      await this.consumer.subscribe({ topic, fromBeginning: true });
-      console.log(`\n\n✅ Subscribed to topic ${topic}\n\n`);
+      await this.consumer.subscribe({
+        topic,
+        fromBeginning: true,
+      });
+      console.log(`✅ Subscribed to topic ${topic}`);
     } catch (error) {
       throw new Error(`\n\n❌ Error subscribing to topic: ${error}\n\n`);
     }
   }
 
-  // consume messages
-  async consume(onMessage: (message: string) => void) {
+  async consumeMessages(callback: (message: any) => void): Promise<void> {
     try {
       await this.consumer.run({
         eachMessage: async ({ topic, partition, message }) => {
-          message?.value && onMessage(message.value.toString());
+          callback(JSON.parse(message?.value?.toString()!));
         },
       });
     } catch (error) {
@@ -46,7 +51,6 @@ export class KafkaConfig {
     }
   }
 
-  //disconnect
   async disconnect() {
     try {
       await this.consumer.disconnect();

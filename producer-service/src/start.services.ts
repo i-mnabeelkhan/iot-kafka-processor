@@ -1,6 +1,6 @@
 import { KafkaConfig } from "./config/kafka.config";
 
-export const kafka = new KafkaConfig(["localhost:29092"]);
+export const kafka = new KafkaConfig();
 
 export const startServices = async () => {
   try {
